@@ -2,77 +2,69 @@
 
 ## Описание
 
-**seg_service** — это минимальный сервис для управления сегментами пользователей.
-Сервис позволяет:
-- создавать, удалять, переименовывать сегменты,
-- добавлять/удалять пользователей в сегменты,
-- случайно распределять сегмент на процент пользователей,
-- получать список сегментов пользователя через API.
+**seg_service** — сервис для управления сегментами пользователей.
 
-Архитектура построена по принципам чистой архитектуры (Clean Architecture).
+- Создание, удаление, переименование сегментов
+- Добавление/удаление пользователей в сегменты
+- Случайное распределение сегмента на процент пользователей
+- Получение сегментов пользователя через API
+
+Архитектура: Clean Architecture (чистая архитектура).
 
 ---
 
 ## Структура проекта
 
 ```
-seg_service/
-│
-├── config/
-│   ├── config.go         # Загрузка конфигурации из переменных окружения
-│   └── .env.example      # Пример .env файла
-│
-├── internal/
-│   ├── domain/           # Бизнес-модели и интерфейсы (чистая архитектура)
-│   ├── repository/       # Реализация репозиториев (PostgreSQL, Redis)
-│   ├── service/          # Бизнес-логика (работа с сегментами)
-│   └── handler/          # HTTP-обработчики и роутинг
-│
-├── migrations/           # Миграции для PostgreSQL
-│
-├── main.go               # Точка входа, сборка приложения
-├── go.mod                # Go-модуль и зависимости
-└── README.md             # Описание проекта (этот файл)
+├── .env                # Переменные окружения для docker-compose и приложения
+├── docker-compose.yml  # Запуск всей инфраструктуры (Postgres, Redis, сервис)
+├── README.md           # Описание проекта
+└── seg_service/
+    ├── Dockerfile      # Dockerfile для сборки сервиса
+    ├── go.mod, go.sum  # Go-модули и зависимости
+    ├── main.go         # Точка входа
+    ├── config/         # Конфиг и пример .env
+    ├── internal/
+    │   ├── domain/     # Бизнес-модели и интерфейсы
+    │   ├── repository/ # Реализация репозиториев (Postgres, Redis)
+    │   ├── service/    # Бизнес-логика
+    │   └── handler/    # HTTP-обработчики
+    └── migrations/     # Миграции для Postgres
 ```
 
 ---
 
-## Быстрый старт
+## Быстрый старт (Docker Compose)
 
-### 1. Настрой .env
-
-Создай файл `config/.env` (или скопируй из `.env.example`) и укажи параметры подключения к PostgreSQL, Redis и порт сервера:
+1. **Создай .env в корне** (или скопируй из `.env-example`):
 
 ```
-POSTGRES_DSN=postgres://user:password@localhost:5432/seg_service?sslmode=disable
-REDIS_ADDR=localhost:6379
+POSTGRES_DB=seg_service
+POSTGRES_USER=postgres
+POSTGRES_PASSWORD=postgres
+POSTGRES_DSN=postgres://postgres:postgres@postgres:5432/seg_service?sslmode=disable
+REDIS_ADDR=redis:6379
 REDIS_PASS=
 HTTP_PORT=:8080
 ```
 
-### 2. Применить миграции
-
-Создай базу данных и примени миграции (например, с помощью goose):
+2. **Запусти сервис и инфраструктуру:**
 
 ```sh
-goose -dir seg_service/migrations postgres "postgres://user:password@localhost:5432/seg_service?sslmode=disable" up
+docker-compose up --build
 ```
 
-### 3. Запусти сервис
+- Сервис будет доступен на http://localhost:8080
+- Postgres — на порту 5433 (логин/пароль из .env)
+- Redis — на порту 6379
 
-```sh
-go run main.go
-```
-или
-```sh
-go build -o seg_service && ./seg_service
-```
+3. **Миграции применяются автоматически контейнером migrate**
 
 ---
 
 ## Примеры API-запросов
 
-### Для Linux/Mac или Docker (curl)
+### Linux/Mac/Docker (curl)
 
 #### Создать сегмент
 ```sh
@@ -111,9 +103,9 @@ curl -X POST -H "Content-Type: application/json" -d '{"Segment":"MAIL_GPT","Perc
 
 ---
 
-## Примеры для Windows PowerShell (Invoke-WebRequest)
+### Windows PowerShell (Invoke-WebRequest)
 
-> **Важно:** В PowerShell не используйте curl для POST-запросов с JSON — используйте Invoke-WebRequest!
+> В PowerShell для POST-запросов с JSON используйте Invoke-WebRequest!
 
 #### Создать сегмент
 ```powershell
@@ -169,11 +161,10 @@ Invoke-WebRequest -Uri "http://localhost:8080/segment/distribute" `
 
 ## Важно
 
-- Все переменные окружения должны быть заданы (лучше всего через .env и godotenv).
-- Перед первым запуском обязательно примени миграции к базе данных.
+- Все переменные окружения должны быть заданы (лучше всего через .env в корне).
+- Перед первым запуском обязательно примените миграции (docker-compose делает это автоматически).
 - Redis кеш реализован как заглушка — можно доработать при необходимости.
 - Логика и структура легко расширяются под production.
-- **curl-примеры пригодятся для docker и Linux-среды.**
 
 ---
 
