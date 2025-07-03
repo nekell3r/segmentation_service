@@ -1,0 +1,62 @@
+# Go
+/bin/
+/build/
+*.exe
+*.test
+*.out
+
+# Dependency directories (remove the comment below if you use Go modules)
+/vendor/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Env files
+seg_service/config/.env
+seg_service/config/.env.*
+
+# Docker
+*.pid
+docker-compose.override.yml
+
+# Logs
+*.log
+
+# Go
+/bin/
+/build/
+*.exe
+*.test
+*.out
+
+# Dependency directories
+/vendor/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Env files
+.env
+.env.*
+
+# Docker
+*.pid
+docker-compose.override.yml
+
+# Logs
+*.log
+
+# Other
+coverage.out
